@@ -3,37 +3,37 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Random Decision Maker</title>
+  <title>Wheel of Names</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/winwheel@2.7.0/Winwheel.min.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f0f4f8;
-      color: #333;
       text-align: center;
-      padding: 50px;
+      background: #f8f8ff;
+      padding: 20px;
     }
 
     h1 {
+      color: #333;
       font-size: 2.5rem;
-      color: #0066cc;
     }
 
     textarea {
       width: 80%;
       height: 100px;
-      margin-top: 20px;
-      padding: 10px;
       font-size: 1rem;
-      border: 2px solid #ccc;
+      margin: 20px auto;
+      padding: 10px;
       border-radius: 8px;
+      border: 2px solid #ccc;
       resize: none;
     }
 
     button {
-      margin-top: 20px;
       padding: 12px 24px;
       font-size: 1rem;
-      background-color: #0066cc;
+      background-color: #28a745;
       color: white;
       border: none;
       border-radius: 8px;
@@ -41,41 +41,79 @@
     }
 
     button:hover {
-      background-color: #004c99;
+      background-color: #1e7e34;
     }
 
-    #result {
+    canvas {
       margin-top: 30px;
-      font-size: 1.8rem;
+    }
+
+    #winner {
+      font-size: 1.5rem;
       font-weight: bold;
-      color: #28a745;
+      margin-top: 20px;
+      color: #0066cc;
     }
   </style>
 </head>
 <body>
-  <h1>🎲 Random Decision Maker</h1>
+  <h1>🎡 Wheel of Names</h1>
   <p>Enter choices separated by commas:</p>
-  <textarea id="choicesInput" placeholder="e.g. Pizza, Burger, Sushi, Pasta"></textarea><br/>
-  <button onclick="makeDecision()">Decide!</button>
+  <textarea id="choicesInput" placeholder="e.g. Alice, Bob, Charlie"></textarea><br/>
+  <button onclick="createAndSpinWheel()">Spin the Wheel!</button>
 
-  <div id="result"></div>
+  <canvas id="canvas" width="500" height="500"></canvas>
+  <div id="winner"></div>
 
   <script>
-    function makeDecision() {
+    let theWheel;
+
+    function createAndSpinWheel() {
       const input = document.getElementById("choicesInput").value;
       const choices = input.split(",").map(choice => choice.trim()).filter(Boolean);
 
-      if (choices.length === 0) {
-        document.getElementById("result").textContent = "Please enter at least one option!";
+      if (choices.length < 2) {
+        document.getElementById("winner").textContent = "Please enter at least 2 names!";
         return;
       }
 
-      const randomIndex = Math.floor(Math.random() * choices.length);
-      const selected = choices[randomIndex];
+      // Clear canvas
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      document.getElementById("result").textContent = `🎉 You should pick: ${selected}`;
+      // Create segments
+      const segments = choices.map(choice => ({ fillStyle: getRandomColor(), text: choice }));
+
+      // Create wheel
+      theWheel = new Winwheel({
+        canvasId: "canvas",
+        numSegments: segments.length,
+        segments: segments,
+        animation: {
+          type: "spinToStop",
+          duration: 5,
+          spins: 7,
+          callbackFinished: displayWinner
+        }
+      });
+
+      // Start spin
+      theWheel.startAnimation();
+    }
+
+    function displayWinner(indicatedSegment) {
+      document.getElementById("winner").textContent = `🎉 Winner: ${indicatedSegment.text}`;
+    }
+
+    function getRandomColor() {
+      const letters = '789ABCD'.split('');
+      let color = '#';
+      for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * letters.length)];
+      }
+      return color;
     }
   </script>
 </body>
 </html>
-
