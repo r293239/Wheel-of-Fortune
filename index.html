@@ -457,8 +457,10 @@
             
             showResult(angle) {
                 const segmentAngle = 360 / this.names.length;
-                const normalizedAngle = (360 - (angle % 360)) % 360;
-                const winnerIndex = Math.floor(normalizedAngle / segmentAngle);
+                // Adjust for pointer being at top (0 degrees) and wheel spinning clockwise
+                // We need to account for the final position relative to the pointer
+                const adjustedAngle = (360 - (this.currentRotation % 360) + 90) % 360;
+                const winnerIndex = Math.floor(adjustedAngle / segmentAngle) % this.names.length;
                 const winner = this.names[winnerIndex];
                 
                 this.resultText.innerHTML = `
