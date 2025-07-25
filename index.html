@@ -40,6 +40,10 @@
             gap: 20px;
         }
 
+        .wheel-wrapper {
+            position: relative;
+        }
+
         .wheel {
             width: 400px;
             height: 400px;
@@ -48,31 +52,41 @@
             border: 8px solid #fff;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             transition: transform 4s cubic-bezier(0.23, 1, 0.32, 1);
-            background: conic-gradient(
-                #ff6b6b 0deg 60deg,
-                #4ecdc4 60deg 120deg,
-                #45b7d1 120deg 180deg,
-                #96ceb4 180deg 240deg,
-                #feca57 240deg 300deg,
-                #ff9ff3 300deg 360deg
-            );
+            overflow: hidden;
         }
 
         .wheel-segment {
             position: absolute;
-            width: 50%;
-            height: 50%;
-            transform-origin: right bottom;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 200px;
+            height: 200px;
+            top: 50%;
+            left: 50%;
+            transform-origin: 0 0;
+            overflow: hidden;
+        }
+
+        .wheel-segment::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            border-radius: 50%;
+            transform: rotate(0deg);
+        }
+
+        .wheel-text {
+            position: absolute;
+            top: 50%;
+            left: 60px;
+            transform: translateY(-50%);
             color: white;
             font-weight: bold;
             font-size: 14px;
-            text-align: center;
-            padding: 10px;
-            word-break: break-word;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            white-space: nowrap;
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .pointer {
@@ -85,7 +99,7 @@
             border-left: 15px solid transparent;
             border-right: 15px solid transparent;
             border-top: 30px solid #fff;
-            z-index: 10;
+            z-index: 100;
             filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
         }
 
@@ -281,8 +295,9 @@
     
     <div class="container">
         <div class="wheel-container">
-            <div class="wheel" id="wheel">
+            <div class="wheel-wrapper">
                 <div class="pointer"></div>
+                <div class="wheel" id="wheel"></div>
             </div>
             <button class="spin-button" id="spinButton">SPIN THE WHEEL!</button>
         </div>
@@ -370,7 +385,7 @@
             }
             
             updateWheel() {
-                this.wheel.innerHTML = '<div class="pointer"></div>';
+                this.wheel.innerHTML = '';
                 
                 if (this.names.length === 0) {
                     this.wheel.style.background = '#ddd';
@@ -378,26 +393,25 @@
                 }
                 
                 const segmentAngle = 360 / this.names.length;
-                let gradientStops = [];
                 
                 this.names.forEach((name, index) => {
                     const color = this.colors[index % this.colors.length];
                     const startAngle = index * segmentAngle;
-                    const endAngle = (index + 1) * segmentAngle;
-                    
-                    gradientStops.push(`${color} ${startAngle}deg ${endAngle}deg`);
                     
                     const segment = document.createElement('div');
                     segment.className = 'wheel-segment';
-                    segment.textContent = name;
-                    segment.style.transform = `rotate(${startAngle + segmentAngle/2}deg)`;
+                    segment.style.transform = `rotate(${startAngle}deg)`;
+                    segment.style.clipPath = `polygon(0 0, 200px 0, ${200 * Math.cos(segmentAngle * Math.PI / 180)}px ${200 * Math.sin(segmentAngle * Math.PI / 180)}px)`;
                     segment.style.background = color;
-                    segment.style.clipPath = `polygon(0 0, 100% 0, 50% 100%)`;
                     
+                    const text = document.createElement('div');
+                    text.className = 'wheel-text';
+                    text.textContent = name;
+                    text.style.transform = `translateY(-50%) rotate(${segmentAngle / 2}deg)`;
+                    
+                    segment.appendChild(text);
                     this.wheel.appendChild(segment);
                 });
-                
-                this.wheel.style.background = `conic-gradient(${gradientStops.join(', ')})`;
             }
             
             updateNamesList() {
