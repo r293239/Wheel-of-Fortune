@@ -457,10 +457,12 @@
             
             showResult(angle) {
                 const segmentAngle = 360 / this.names.length;
-                // Adjust for pointer being at top (0 degrees) and wheel spinning clockwise
-                // We need to account for the final position relative to the pointer
-                const adjustedAngle = (360 - (this.currentRotation % 360) + 90) % 360;
-                const winnerIndex = Math.floor(adjustedAngle / segmentAngle) % this.names.length;
+                // The pointer is at the top (270 degrees in our coordinate system)
+                // We need to find which segment is under the pointer after rotation
+                const finalRotation = this.currentRotation % 360;
+                // Since segments start at 0 degrees and pointer is at top (-90 degrees from 0)
+                const pointerAngle = (270 - finalRotation) % 360;
+                const winnerIndex = Math.floor(pointerAngle / segmentAngle) % this.names.length;
                 const winner = this.names[winnerIndex];
                 
                 this.resultText.innerHTML = `
